@@ -1,0 +1,443 @@
+:root {
+    --bg-dark: #0f0524;
+    --border-yellow: #ffcc00;
+    --border-purple: #9d00ff;
+    --btn-green: #2a8b54;
+    --btn-cyan: #1fd1d1;
+    --btn-purple: #b800e6;
+    --btn-yellow: #ffb800;
+    --text-white: #ffffff;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Balsamiq Sans', cursive, sans-serif;
+}
+
+body {
+    background-color: #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+}
+
+#app {
+    width: 100%;
+    max-width: 400px;
+    height: 100vh;
+    background-color: var(--bg-dark);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.top-polygon {
+    height: 60px;
+    background: linear-gradient(135deg, #e74c3c 25%, #c0392b 25%, #c0392b 50%, #e74c3c 50%, #e74c3c 75%, #c0392b 75%, #c0392b 100%);
+    background-size: 40px 40px;
+    clip-path: polygon(0 0, 100% 0, 100% 80%, 80% 100%, 60% 80%, 40% 100%, 20% 80%, 0 100%);
+    position: absolute;
+    top: 0;
+    width: 100%;
+    z-index: 10;
+}
+
+.bottom-polygon {
+    height: 80px;
+    background-color: #f39c12;
+    clip-path: polygon(0 20%, 20% 0, 40% 20%, 60% 0, 80% 20%, 100% 0, 100% 100%, 0 100%);
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    z-index: 10;
+    display: flex;
+    align-items: flex-end;
+    padding: 10px;
+}
+
+.screen {
+    display: none;
+    flex: 1;
+    padding: 80px 20px 90px 20px;
+    flex-direction: column;
+    overflow-y: auto;
+    width: 100%;
+}
+
+.screen.active {
+    display: flex;
+}
+
+.screen-title {
+    color: var(--text-white);
+    text-align: center;
+    font-size: 24px;
+    letter-spacing: 2px;
+    margin-bottom: 5px;
+}
+
+.divider {
+    height: 2px;
+    background-color: var(--border-yellow);
+    margin-bottom: 20px;
+}
+
+.divider-purple {
+    height: 3px;
+    background-color: var(--btn-purple);
+    margin: 20px 0;
+}
+
+/* Home Screen Elements */
+.user-profile-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+}
+
+.user-pill {
+    flex: 1;
+    background-color: #fff;
+    border: 3px solid #000;
+    border-radius: 20px;
+    padding: 10px 15px;
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center;
+    outline: none;
+}
+
+.level-circle {
+    width: 60px;
+    height: 60px;
+    border: 3px solid var(--border-yellow);
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: var(--border-yellow);
+    font-weight: bold;
+}
+
+.level-label {
+    font-size: 10px;
+}
+.level-num {
+    font-size: 24px;
+    line-height: 1;
+}
+
+.split-buttons {
+    display: flex;
+    height: 80px;
+    border: 3px solid #000;
+    border-radius: 15px;
+    overflow: hidden;
+    margin-bottom: 30px;
+}
+
+.btn-host, .btn-join {
+    flex: 1;
+    border: none;
+    font-size: 20px;
+    font-weight: bold;
+    color: rgba(255,255,255,0.8);
+    cursor: pointer;
+    text-transform: uppercase;
+}
+
+.btn-host {
+    background-color: var(--btn-green);
+    border-right: 3px solid #000;
+}
+
+.btn-join {
+    background-color: var(--btn-cyan);
+    color: #fff;
+}
+
+.section-title {
+    color: var(--text-white);
+    text-align: center;
+    font-size: 16px;
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+}
+
+.btn-yellow-pill {
+    background-color: var(--btn-yellow);
+    border: 3px solid #000;
+    border-radius: 25px;
+    padding: 12px;
+    width: 100%;
+    font-size: 20px;
+    font-weight: bold;
+    color: #fff;
+    cursor: pointer;
+}
+
+.join-code-row {
+    display: flex;
+    gap: 10px;
+}
+
+.code-input {
+    flex: 1;
+    background-color: #fff;
+    border: 3px solid #000;
+    border-radius: 15px;
+    padding: 10px;
+    font-size: 18px;
+    text-align: center;
+    outline: none;
+}
+
+.btn-yellow-square {
+    background-color: var(--btn-yellow);
+    border: 3px solid #000;
+    border-radius: 15px;
+    padding: 0 20px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #fff;
+    cursor: pointer;
+}
+
+/* Public Rooms */
+.rooms-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.room-card {
+    border: 3px solid var(--border-yellow);
+    border-radius: 15px;
+    padding: 10px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: rgba(0,0,0,0.3);
+    cursor: pointer;
+}
+
+.room-card:active {
+    background-color: rgba(255,255,255,0.1);
+}
+
+.room-info h4 {
+    color: var(--text-white);
+    font-size: 12px;
+    margin-bottom: 5px;
+}
+
+.room-info p {
+    color: var(--btn-cyan);
+    font-size: 18px;
+}
+
+.room-players h4 {
+    color: var(--text-white);
+    font-size: 12px;
+    margin-bottom: 5px;
+    text-align: right;
+}
+
+.room-players p {
+    color: #0f0;
+    font-size: 18px;
+    text-align: right;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.page-btn {
+    background: var(--border-yellow);
+    border: 2px solid #000;
+    color: #000;
+    padding: 5px 15px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.page-text {
+    color: var(--text-white);
+    font-size: 18px;
+}
+
+/* Room Screen */
+.room-title-bar {
+    text-align: center;
+    margin-bottom: 10px;
+}
+.room-label {
+    color: var(--border-yellow);
+    font-size: 12px;
+}
+.room-title-bar h2 {
+    color: #fff;
+    font-size: 20px;
+    border-bottom: 1px solid var(--border-yellow);
+    padding-bottom: 5px;
+}
+
+.players-header {
+    display: grid;
+    grid-template-columns: 1fr 60px 60px;
+    gap: 10px;
+    color: #fff;
+    font-size: 14px;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.players-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.player-row {
+    display: grid;
+    grid-template-columns: 1fr 60px 60px;
+    gap: 10px;
+    align-items: center;
+}
+
+.player-name-box {
+    background-color: #fff;
+    border: 2px solid #000;
+    border-radius: 10px;
+    padding: 10px;
+    text-align: center;
+    font-weight: bold;
+    position: relative;
+}
+.player-name-box.me {
+    background-color: #ff9900;
+}
+.player-badge {
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #000;
+    color: #0ff;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 5px;
+}
+
+.gender-box, .interest-box {
+    background-color: #3b2b5e;
+    border: 2px solid #000;
+    border-radius: 10px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 20px;
+}
+
+.gender-box { border-color: #b800e6; }
+.interest-box { border-color: #1fd1d1; }
+
+.waiting-text {
+    color: #fff;
+    text-align: center;
+    margin-top: 20px;
+    font-size: 16px;
+}
+
+/* Game UI */
+.game-card {
+    background: rgba(255,255,255,0.1);
+    border: 2px solid var(--border-yellow);
+    border-radius: 15px;
+    padding: 20px;
+    text-align: center;
+    margin-top: 20px;
+}
+
+.turn-indicator {
+    color: var(--border-yellow);
+    font-size: 20px;
+    margin-bottom: 15px;
+}
+
+.btn-truth, .btn-dare {
+    padding: 10px 20px;
+    font-size: 18px;
+    font-weight: bold;
+    border: 2px solid #000;
+    border-radius: 10px;
+    cursor: pointer;
+    color: #fff;
+    margin: 5px;
+}
+.btn-truth { background-color: var(--btn-cyan); }
+.btn-dare { background-color: #e74c3c; }
+
+#qType {
+    color: var(--border-yellow);
+    margin-bottom: 10px;
+}
+#qText {
+    color: #fff;
+    font-size: 18px;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Footer Buttons */
+.bottom-bar {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.btn-purple-border {
+    background-color: var(--btn-purple);
+    border: 3px solid #000;
+    border-radius: 10px;
+    color: #fff;
+    padding: 5px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.btn-green-pill {
+    background-color: var(--btn-green);
+    border: 3px solid #000;
+    border-radius: 20px;
+    color: #fff;
+    padding: 5px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.loading-text {
+    color: white;
+    text-align: center;
+    padding: 20px;
+}

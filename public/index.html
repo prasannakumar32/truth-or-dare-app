@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Truth or Dare - Online</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Balsamiq+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+    <div id="app">
+        <!-- HEADER -->
+        <div class="top-polygon"></div>
+
+        <!-- 1. HOME SCREEN -->
+        <div id="homeScreen" class="screen active">
+            <h1 class="screen-title">ONLINE GAMES</h1>
+            <div class="divider"></div>
+            
+            <div class="user-profile-bar">
+                <input type="text" id="usernameInput" class="user-pill" placeholder="Enter Username" value="Player">
+                <div class="level-circle">
+                    <span class="level-label">LEVEL</span>
+                    <span class="level-num" id="userLevelDisplay">1</span>
+                </div>
+            </div>
+
+            <div class="divider-purple"></div>
+
+            <div class="split-buttons">
+                <button class="btn-host" onclick="hostGame()">HOST<br>GAME</button>
+                <button class="btn-join" onclick="showPublicRooms()">JOIN<br>GAME</button>
+            </div>
+
+            <div class="section-title">PUBLIC ROOMS</div>
+            <button class="btn-yellow-pill" onclick="showPublicRooms()">FIND A ROOM</button>
+
+            <div class="section-title" style="margin-top: 20px;">JOIN BY ROOM CODE</div>
+            <div class="join-code-row">
+                <input type="text" id="roomCodeInput" class="code-input" placeholder="room code" maxlength="6">
+                <button class="btn-yellow-square" onclick="joinByCode()">JOIN</button>
+            </div>
+        </div>
+
+        <!-- 2. PUBLIC ROOMS SCREEN -->
+        <div id="publicRoomsScreen" class="screen">
+            <h1 class="screen-title">PUBLIC ROOMS</h1>
+            <div class="divider"></div>
+
+            <div class="rooms-list" id="publicRoomsList">
+                <!-- Room cards go here -->
+                <div class="loading-text">Loading rooms...</div>
+            </div>
+
+            <div class="pagination">
+                <button class="page-btn">◄</button>
+                <span class="page-text">1/1</span>
+                <button class="page-btn">►</button>
+            </div>
+        </div>
+
+        <!-- 3. ROOM SCREEN -->
+        <div id="roomScreen" class="screen">
+            <div class="room-title-bar">
+                <span class="room-label">ROOM:</span>
+                <h2 id="roomNameDisplay">Room Name</h2>
+            </div>
+            
+            <div class="room-content">
+                <div class="players-header">
+                    <span>name</span>
+                    <span>gender</span>
+                    <span>interest</span>
+                </div>
+                
+                <div class="players-list" id="roomPlayersList">
+                    <!-- Player rows go here -->
+                </div>
+
+                <div class="waiting-text" id="waitingText">waiting for other players to join..</div>
+                
+                <!-- Game UI (hidden until start) -->
+                <div id="gamePlaySection" class="hidden">
+                    <div class="game-card">
+                        <div class="turn-indicator" id="turnIndicator">Player's Turn</div>
+                        <div id="choiceButtons">
+                            <button class="btn-truth" onclick="selectTruth()">TRUTH</button>
+                            <button class="btn-dare" onclick="selectDare()">DARE</button>
+                        </div>
+                        <div id="questionDisplay" class="hidden">
+                            <h3 id="qType">TRUTH</h3>
+                            <p id="qText">Question text goes here</p>
+                            <button class="btn-yellow-pill" onclick="completeTurn()" style="margin-top:10px; font-size:16px; padding: 5px 15px;">DONE</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- FOOTER & BOTTOM NAV -->
+        <div class="bottom-polygon">
+            <div class="bottom-bar" id="bottomBar">
+                <button class="btn-purple-border" onclick="goBack()" id="backBtn">Back</button>
+                <!-- Contextual buttons -->
+                <button class="btn-green-pill hidden" id="createJoinBtn" onclick="hostGame()">Create/Join Room</button>
+                <button class="btn-yellow-pill hidden" id="readyBtn" onclick="startGame()">Ready</button>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
