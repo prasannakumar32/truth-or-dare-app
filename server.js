@@ -368,11 +368,43 @@ io.on('connection', (socket) => {
     }
 
     room.gameState = 'playing';
-    room.currentPlayerIndex = 0;
+    room.currentPlayerIndex = -1; // No one's turn yet
     room.questions = [];
 
     io.to(pd.roomId).emit('gameStarted', { room });
-    nextTurn(pd.roomId);
+    // Tell everyone we are waiting for the host to roll
+    io.to(pd.roomId).emit('waitingForRoll', { hostId: room.host });
+  });
+
+  // ── Roll Dice (Host Only) ───────────────────────────────────────────────────
+  socket.on('rollDice', () => {
+    const pd = socketPlayer[socket.id];
+    if (!pd) return;
+    const room = rooms[pd.roomId];
+    if (!room) return;
+
+    if (room.host !== socket.id) {
+      socket.emit('error', 'Only the host can roll the dice');
+      return;
+    }
+
+    // Pick a random player
+    const randomIndex = Math.floor(Math.random() * room.players.length);
+    room.currentPlayerIndex = randomIndex;
+    const selectedPlayer = room.players[randomIndex];
+
+    // Emit rolling animation event
+    io.to(pd.roomId).emit('diceRolling', { duration: 3000 });
+
+    // After animation, start turn
+    setTimeout(() => {
+      io.to(pd.roomId).emit('nextTurn', {
+        currentPlayer: selectedPlayer.name,
+        playerId: selectedPlayer.id,
+        playerIndex: randomIndex,
+        level: selectedPlayer.level
+      });
+    }, 3000);
   });
 
   // ── Select Truth ─────────────────────────────────────────────────────────────
@@ -454,6 +486,37 @@ io.on('connection', (socket) => {
     io.to(pd.roomId).emit('playerUpdated', { room });
   });
 
+  // ── Change Room Privacy ──────────────────────────────────────────────────────
+  socket.on('changeRoomPrivacy', (data) => {
+    const pd = socketPlayer[socket.id];
+    if (!pd) return;
+    const room = rooms[pd.roomId];
+    if (!room) return;
+    
+    if (room.host !== socket.id) {
+      socket.emit('error', 'Only the host can change room privacy');
+      return;
+    }
+
+    room.type = data.type; // 'public' or 'private'
+
+    if (data.type === 'public') {
+      publicRoomIndex[pd.roomId] = {
+        id: pd.roomId,
+        name: `${pd.username}'s Room`,
+        host: pd.username,
+        players: room.players.length,
+        style: 'default',
+        created: new Date().toISOString()
+      };
+    } else {
+      delete publicRoomIndex[pd.roomId];
+    }
+    
+    io.emit('publicRoomsUpdated', { rooms: Object.values(publicRoomIndex) });
+    io.to(pd.roomId).emit('roomPrivacyChanged', { type: data.type });
+  });
+
   // ── Complete Turn ────────────────────────────────────────────────────────────
   socket.on('completeTurn', () => {
     const pd = socketPlayer[socket.id];
@@ -485,7 +548,9 @@ io.on('connection', (socket) => {
     }
 
     io.to(pd.roomId).emit('playerUpdated', { room });
-    nextTurn(pd.roomId);
+    
+    // Back to waiting for roll
+    io.to(pd.roomId).emit('waitingForRoll', { hostId: room.host });
   });
 
   // ── Roll for Next Turn ───────────────────────────────────────────────────────

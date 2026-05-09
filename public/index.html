@@ -9,14 +9,62 @@
     <link href="https://fonts.googleapis.com/css2?family=Balsamiq+Sans:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <script src="/socket.io/socket.io.js"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
     <div id="app">
-        <!-- HEADER -->
+        <!-- HEADER POLYGON -->
         <div class="top-polygon"></div>
 
-        <!-- 1. HOME SCREEN -->
-        <div id="homeScreen" class="screen active">
+        <!-- 0. LANDING SCREEN (Image 1) -->
+        <div id="landingScreen" class="screen active">
+            <!-- Top Bar -->
+            <div class="landing-top-bar">
+                <div class="currency-pill">🪙 75.55</div>
+                <div class="top-right-icons">
+                    <button class="icon-btn-circle">🔕</button>
+                    <button class="icon-btn-circle">🔊</button>
+                </div>
+            </div>
+            
+            <div class="level-badge-large">
+                <span class="level-label">LEVEL</span>
+                <span class="level-num" id="landingLevel">1</span>
+            </div>
+
+            <!-- Center Logo -->
+            <div class="logo-box">
+                <h1>TRUTH<br>DARE<br><span>ONLINE !</span></h1>
+            </div>
+
+            <!-- Small buttons under logo -->
+            <div class="middle-icons">
+                <button class="btn-green-icon" onclick="showGoogleLoginModal()">👤</button>
+                <button class="btn-yellow-icon"><strong>AD</strong><br><small>Premium</small></button>
+            </div>
+
+            <!-- Big Buttons -->
+            <div class="main-buttons">
+                <button class="btn-yellow-huge" onclick="showScreen('homeScreen')">ONLINE <span class="btn-icon-right">🔗</span></button>
+                <button class="btn-yellow-huge" onclick="alert('Local mode coming soon!')">LOCAL <span class="btn-icon-right">📵</span></button>
+            </div>
+
+            <!-- Footer Icons -->
+            <div class="social-icons">
+                <button class="social-btn">👾</button>
+                <button class="social-btn">📧</button>
+                <button class="social-btn">f</button>
+            </div>
+            <div class="release-notes-btn">RELEASE NOTES</div>
+
+            <div class="landing-footer">
+                <span class="version">v.1.0.0</span>
+                <button class="privacy-btn">PRIVACY POLICY</button>
+            </div>
+        </div>
+
+        <!-- 1. ONLINE HOME SCREEN (Image 2 Equivalent) -->
+        <div id="homeScreen" class="screen">
             <h1 class="screen-title">ONLINE GAMES</h1>
             <div class="divider"></div>
             
@@ -28,7 +76,7 @@
                 </div>
             </div>
 
-            <div class="divider-purple"></div>
+            <div class="divider-purple" style="margin-top: 15px;"></div>
 
             <div class="split-buttons">
                 <button class="btn-host" onclick="hostGame()">HOST<br>GAME</button>
@@ -51,7 +99,6 @@
             <div class="divider"></div>
 
             <div class="rooms-list" id="publicRoomsList">
-                <!-- Room cards go here -->
                 <div class="loading-text">Loading rooms...</div>
             </div>
 
@@ -69,6 +116,15 @@
                 <h2 id="roomNameDisplay">Room Name</h2>
             </div>
             
+            <!-- Host Options (Change Public/Private) -->
+            <div id="hostOptions" class="hidden" style="text-align: center; margin-bottom: 10px;">
+                <label style="color: white; font-size: 14px; margin-right: 10px;">Room Privacy:</label>
+                <select id="roomPrivacyToggle" onchange="toggleRoomPrivacy()" style="padding: 5px; border-radius: 5px; font-family: inherit;">
+                    <option value="public">Public</option>
+                    <option value="private">Private</option>
+                </select>
+            </div>
+
             <div class="room-content">
                 <div class="players-header">
                     <span>name</span>
@@ -84,9 +140,14 @@
                 
                 <!-- Game UI (hidden until start) -->
                 <div id="gamePlaySection" class="hidden">
-                    <div class="game-card">
-                        <div class="turn-indicator" id="turnIndicator">Player's Turn</div>
-                        <div id="choiceButtons">
+                    <div id="diceOverlay" class="hidden">
+                        <div class="dice">🎲</div>
+                        <p>Selecting next player...</p>
+                    </div>
+
+                    <div class="game-card" id="turnCard">
+                        <div class="turn-indicator" id="turnIndicator">Waiting for Host...</div>
+                        <div id="choiceButtons" class="hidden">
                             <button class="btn-truth" onclick="selectTruth()">TRUTH</button>
                             <button class="btn-dare" onclick="selectDare()">DARE</button>
                         </div>
@@ -97,17 +158,32 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
 
+        <!-- GOOGLE LOGIN MODAL -->
+        <div id="googleLoginModal" class="hidden">
+            <div class="modal-overlay" onclick="hideGoogleLoginModal()"></div>
+            <div class="modal-box">
+                <h3>Login with Google</h3>
+                <p>Sync your level and stats automatically!</p>
+                <!-- Google Login Container -->
+                <div id="googleLoginContainer" style="margin-top: 15px; display: flex; justify-content: center;"></div>
+                <div id="googleLoginSuccess" class="hidden" style="color: #27ae60; text-align: center; margin-top: 10px; font-size: 14px; font-weight: bold;">
+                    Logged in via Google! Profile synced.
+                </div>
+                <button class="btn-purple-border" onclick="hideGoogleLoginModal()" style="margin-top: 20px;">Close</button>
             </div>
         </div>
 
         <!-- FOOTER & BOTTOM NAV -->
         <div class="bottom-polygon">
             <div class="bottom-bar" id="bottomBar">
-                <button class="btn-purple-border" onclick="goBack()" id="backBtn">Back</button>
+                <button class="btn-purple-border hidden" onclick="goBack()" id="backBtn">Back</button>
                 <!-- Contextual buttons -->
                 <button class="btn-green-pill hidden" id="createJoinBtn" onclick="hostGame()">Create/Join Room</button>
-                <button class="btn-yellow-pill hidden" id="readyBtn" onclick="startGame()">Ready</button>
+                <button class="btn-yellow-pill hidden" id="readyBtn" onclick="startGame()">Start Game</button>
+                <button class="btn-cyan-pill hidden" id="rollDiceBtn" onclick="rollDice()">Roll Dice 🎲</button>
             </div>
         </div>
     </div>

@@ -8,6 +8,7 @@ let publicRoomsData = [];
 
 // DOM Elements
 const screens = {
+    landing: document.getElementById('landingScreen'),
     home: document.getElementById('homeScreen'),
     publicRooms: document.getElementById('publicRoomsScreen'),
     room: document.getElementById('roomScreen')
@@ -32,6 +33,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     initGoogleLogin();
 });
+
+function showGoogleLoginModal() {
+    document.getElementById('googleLoginModal').classList.remove('hidden');
+}
+
+function hideGoogleLoginModal() {
+    document.getElementById('googleLoginModal').classList.add('hidden');
+}
 
 function initGoogleLogin() {
     if (window.google && window.google.accounts && window.google.accounts.id) {
@@ -74,9 +83,11 @@ async function checkProfile(username) {
         if (data.exists && data.player) {
             myLevel = data.player.level;
             document.getElementById('userLevelDisplay').textContent = myLevel;
+            document.getElementById('landingLevel').textContent = myLevel;
         } else {
             myLevel = 1;
             document.getElementById('userLevelDisplay').textContent = 1;
+            document.getElementById('landingLevel').textContent = 1;
         }
     } catch (e) {
         console.error('Failed to load profile', e);
@@ -91,8 +102,11 @@ function showScreen(screenName) {
     document.getElementById('createJoinBtn').classList.add('hidden');
     document.getElementById('readyBtn').classList.add('hidden');
     document.getElementById('rollDiceBtn').classList.add('hidden');
+    document.getElementById('backBtn').classList.remove('hidden');
 
-    if (screenName === 'publicRooms') {
+    if (screenName === 'landing') {
+        document.getElementById('backBtn').classList.add('hidden');
+    } else if (screenName === 'publicRooms') {
         document.getElementById('createJoinBtn').classList.remove('hidden');
     } else if (screenName === 'room' && currentRoom) {
         if (currentRoom.host === socket.id && currentRoom.gameState === 'waiting') {
@@ -104,7 +118,9 @@ function showScreen(screenName) {
 }
 
 function goBack() {
-    if (screens.publicRooms.classList.contains('active')) {
+    if (screens.home.classList.contains('active')) {
+        showScreen('landing');
+    } else if (screens.publicRooms.classList.contains('active')) {
         showScreen('home');
     } else if (screens.room.classList.contains('active')) {
         socket.emit('leaveRoom');
@@ -172,6 +188,11 @@ function selectDare() {
 function completeTurn() {
     socket.emit('completeTurn');
     document.getElementById('questionDisplay').classList.add('hidden');
+}
+
+function toggleRoomPrivacy() {
+    const type = document.getElementById('roomPrivacyToggle').value;
+    socket.emit('changeRoomPrivacy', { type });
 }
 
 // --- Socket Handlers ---
@@ -263,6 +284,15 @@ socket.on('questionSelected', (data) => {
     document.getElementById('qText').textContent = data.question;
 });
 
+socket.on('roomPrivacyChanged', (data) => {
+    currentRoom.type = data.type;
+    if (data.type === 'public') {
+        alert("Room is now PUBLIC!");
+    } else {
+        alert("Room is now PRIVATE!");
+    }
+});
+
 // --- Render Helpers ---
 function renderPublicRooms(rooms) {
     const list = document.getElementById('publicRoomsList');
@@ -294,6 +324,15 @@ function renderRoom() {
     if (!currentRoom) return;
     document.getElementById('roomNameDisplay').textContent = currentRoom.id;
     
+    // Host Options logic
+    const hostOptions = document.getElementById('hostOptions');
+    if (currentRoom.host === socket.id) {
+        hostOptions.classList.remove('hidden');
+        document.getElementById('roomPrivacyToggle').value = currentRoom.type;
+    } else {
+        hostOptions.classList.add('hidden');
+    }
+
     const list = document.getElementById('roomPlayersList');
     list.innerHTML = '';
 
