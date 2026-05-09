@@ -29,7 +29,42 @@ document.addEventListener('DOMContentLoaded', () => {
             checkProfile(val);
         }
     });
+
+    initGoogleLogin();
 });
+
+function initGoogleLogin() {
+    if (window.google && window.google.accounts && window.google.accounts.id) {
+        google.accounts.id.initialize({
+            client_id: '1078612390359-tfjb1m6ncaqfb2qdt2hpmlkhcur7o2v0.apps.googleusercontent.com',
+            callback: handleCredentialResponse
+        });
+        google.accounts.id.renderButton(
+            document.getElementById("googleLoginContainer"),
+            { theme: "outline", size: "large", type: "standard", shape: "pill" }
+        );
+    } else {
+        setTimeout(initGoogleLogin, 500); // Check again if script hasn't loaded yet
+    }
+}
+
+function handleCredentialResponse(response) {
+    try {
+        // Simple JWT decode (payload is the 2nd part)
+        const payload = JSON.parse(atob(response.credential.split('.')[1]));
+        
+        myUsername = payload.name; // Use Google name
+        document.getElementById('usernameInput').value = myUsername;
+        localStorage.setItem('tod_username', myUsername);
+        
+        document.getElementById('googleLoginContainer').classList.add('hidden');
+        document.getElementById('googleLoginSuccess').classList.remove('hidden');
+        
+        checkProfile(myUsername);
+    } catch(e) {
+        console.error("Error parsing Google credential", e);
+    }
+}
 
 async function checkProfile(username) {
     myUsername = username;
@@ -55,11 +90,16 @@ function showScreen(screenName) {
     // Update bottom bar context buttons
     document.getElementById('createJoinBtn').classList.add('hidden');
     document.getElementById('readyBtn').classList.add('hidden');
+    document.getElementById('rollDiceBtn').classList.add('hidden');
 
     if (screenName === 'publicRooms') {
         document.getElementById('createJoinBtn').classList.remove('hidden');
-    } else if (screenName === 'room' && currentRoom && currentRoom.host === socket.id && currentRoom.gameState === 'waiting') {
-        document.getElementById('readyBtn').classList.remove('hidden');
+    } else if (screenName === 'room' && currentRoom) {
+        if (currentRoom.host === socket.id && currentRoom.gameState === 'waiting') {
+            document.getElementById('readyBtn').classList.remove('hidden');
+        } else if (currentRoom.host === socket.id && currentRoom.gameState === 'playing' && document.getElementById('turnIndicator').textContent === 'Waiting for Host...') {
+            document.getElementById('rollDiceBtn').classList.remove('hidden');
+        }
     }
 }
 
@@ -113,6 +153,10 @@ function showPublicRooms() {
 // --- Game Actions ---
 function startGame() {
     if (currentRoom) socket.emit('startGame');
+}
+
+function rollDice() {
+    socket.emit('rollDice');
 }
 
 function selectTruth() {
@@ -172,13 +216,38 @@ socket.on('gameStarted', (data) => {
     document.getElementById('waitingText').classList.add('hidden');
     document.getElementById('readyBtn').classList.add('hidden');
     document.getElementById('gamePlaySection').classList.remove('hidden');
+    document.getElementById('turnIndicator').textContent = 'Waiting for Host...';
+    showScreen('room'); // Refresh button logic
+});
+
+socket.on('waitingForRoll', (data) => {
+    document.getElementById('turnIndicator').textContent = 'Waiting for Host...';
+    document.getElementById('questionDisplay').classList.add('hidden');
+    document.getElementById('choiceButtons').classList.add('hidden');
+    
+    if (socket.id === data.hostId) {
+        document.getElementById('rollDiceBtn').classList.remove('hidden');
+    } else {
+        document.getElementById('rollDiceBtn').classList.add('hidden');
+    }
+});
+
+socket.on('diceRolling', (data) => {
+    document.getElementById('rollDiceBtn').classList.add('hidden');
+    document.getElementById('diceOverlay').classList.remove('hidden');
+    document.getElementById('turnCard').style.opacity = '0.3';
 });
 
 socket.on('nextTurn', (data) => {
+    // Hide overlay
+    document.getElementById('diceOverlay').classList.add('hidden');
+    document.getElementById('turnCard').style.opacity = '1';
+
     document.getElementById('turnIndicator').textContent = data.currentPlayer + "'s Turn!";
     isMyTurn = (data.playerId === socket.id);
     
     document.getElementById('questionDisplay').classList.add('hidden');
+    document.getElementById('rollDiceBtn').classList.add('hidden');
 
     if (isMyTurn) {
         document.getElementById('choiceButtons').classList.remove('hidden');
